@@ -23,7 +23,7 @@
             overflow: hidden;
         }
 
-        /* INTRO BOOTING SCREEN DENGAN GLOW ELEGAN */
+        /* INTRO BOOTING SCREEN - TANPA GLOW */
         .intro-screen {
             position: fixed;
             top: 0;
@@ -35,7 +35,7 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            transition: opacity 0.6s ease, visibility 0.6s ease;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
         }
         .intro-screen.hide {
             opacity: 0;
@@ -53,18 +53,6 @@
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
-            animation: gentleGlow 2s ease-in-out infinite;
-        }
-        @keyframes gentleGlow {
-            0% {
-                text-shadow: 0 0 0px rgba(113, 35, 117, 0);
-            }
-            50% {
-                text-shadow: 0 0 8px rgba(113, 35, 117, 0.5), 0 0 2px rgba(113, 35, 117, 0.3);
-            }
-            100% {
-                text-shadow: 0 0 0px rgba(113, 35, 117, 0);
-            }
         }
         .booting-text {
             margin-right: 8px;
@@ -388,7 +376,7 @@
     </style>
 </head>
 <body>
-    <!-- INTRO BOOTING DENGAN GLOW ELEGAN -->
+    <!-- INTRO BOOTING - 8 DETIK, TANPA GLOW -->
     <div class="intro-screen" id="introScreen">
         <div class="intro-content">
             <div class="intro-text">
@@ -399,7 +387,6 @@
     </div>
 
     <div class="app-container">
-        <!-- SIDEBAR OVERLAY -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -408,7 +395,6 @@
             <div class="chat-list" id="chatList"></div>
         </div>
 
-        <!-- MAIN CHAT -->
         <div class="main-chat">
             <div class="chat-header">
                 <div class="header-left">
@@ -438,9 +424,9 @@
     </div>
 
     <script>
-        // INTRO
+        // INTRO 8 DETIK
         const introScreen = document.getElementById('introScreen');
-        setTimeout(() => introScreen.classList.add('hide'), 5000);
+        setTimeout(() => introScreen.classList.add('hide'), 8000); // 8 detik
 
         // DATA
         let chats = [];
@@ -449,7 +435,6 @@
         let longPressTimer = null;
         let currentPressItem = null;
 
-        // SIDEBAR TOGGLE
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('show'); }
@@ -457,7 +442,6 @@
         document.getElementById('menuBtn').onclick = openSidebar;
         overlay.onclick = closeSidebar;
 
-        // LOAD & SAVE
         function loadChats() {
             const saved = localStorage.getItem('zythsai_chats');
             if (saved) {
@@ -705,4 +689,4 @@
         document.getElementById('userInput').focus();
     </script>
 </body>
-            </html>
+    </html>
