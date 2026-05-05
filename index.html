@@ -23,7 +23,6 @@
             overflow: hidden;
         }
 
-        /* INTRO BOOTING SCREEN - TANPA GLOW */
         .intro-screen {
             position: fixed;
             top: 0;
@@ -76,7 +75,6 @@
             50% { opacity: 1; transform: translateY(-3px);}
         }
 
-        /* LAYOUT UTAMA */
         .app-container {
             display: flex;
             height: 100%;
@@ -84,7 +82,6 @@
             position: relative;
         }
 
-        /* SIDEBAR - MODAL UNTUK HP */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -175,7 +172,6 @@
             white-space: nowrap;
         }
 
-        /* MAIN CHAT AREA */
         .main-chat {
             flex: 1;
             display: flex;
@@ -231,6 +227,8 @@
             flex-direction: column;
             gap: 12px;
             background: #ffffff;
+            /* Matikan auto-scroll yang agresif */
+            scroll-behavior: auto;
         }
         .message {
             display: flex;
@@ -298,7 +296,6 @@
             30% { transform: translateY(-5px); opacity: 1; }
         }
 
-        /* API INPUT */
         .api-input {
             background: #ffffff;
             padding: 8px 12px;
@@ -330,7 +327,6 @@
             cursor: pointer;
         }
 
-        /* INPUT AREA */
         .input-area {
             background: #ffffff;
             padding: 10px;
@@ -376,7 +372,6 @@
     </style>
 </head>
 <body>
-    <!-- INTRO BOOTING - 8 DETIK, TANPA GLOW -->
     <div class="intro-screen" id="introScreen">
         <div class="intro-content">
             <div class="intro-text">
@@ -426,7 +421,7 @@
     <script>
         // INTRO 8 DETIK
         const introScreen = document.getElementById('introScreen');
-        setTimeout(() => introScreen.classList.add('hide'), 8000); // 8 detik
+        setTimeout(() => introScreen.classList.add('hide'), 8000);
 
         // DATA
         let chats = [];
@@ -435,10 +430,19 @@
         let longPressTimer = null;
         let currentPressItem = null;
 
+        // Pastikan input tetap focus keyboard
+        const userInput = document.getElementById('userInput');
+        function focusInput() {
+            setTimeout(() => {
+                userInput.focus();
+            }, 100);
+        }
+
+        // Sidebar toggle
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('show'); }
-        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); focusInput(); }
         document.getElementById('menuBtn').onclick = openSidebar;
         overlay.onclick = closeSidebar;
 
@@ -559,6 +563,10 @@
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
             const container = document.getElementById('chatMessages');
+            const oldScrollTop = container.scrollTop;
+            const oldScrollHeight = container.scrollHeight;
+            const isNearBottom = oldScrollHeight - oldScrollTop - container.clientHeight < 100;
+            
             container.innerHTML = '';
             chat.messages.forEach(msg => {
                 const div = document.createElement('div');
@@ -566,7 +574,17 @@
                 div.innerHTML = `<div class="message-name">${msg.role === 'user' ? 'Kamu' : 'Zyths AI'}</div><div class="bubble">${msg.role === 'user' ? escapeHtml(msg.content).replace(/\n/g,'<br>') : parseMarkdown(msg.content)}</div>`;
                 container.appendChild(div);
             });
-            setTimeout(() => container.scrollTop = container.scrollHeight, 100);
+            
+            // Scroll hanya jika user sedang di bawah (tidak sedang baca di atas)
+            if (isNearBottom) {
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 50);
+            } else {
+                // Pertahankan posisi scroll
+                const newScrollHeight = container.scrollHeight;
+                container.scrollTop = oldScrollTop + (newScrollHeight - oldScrollHeight);
+            }
         }
 
         function createNewChat() {
@@ -581,6 +599,7 @@
             renderChatList();
             renderCurrentChat();
             closeSidebar();
+            focusInput();
         }
         document.getElementById('newChatBtn').onclick = createNewChat;
 
@@ -619,7 +638,7 @@
             typing.id = 'typingIndicator';
             typing.innerHTML = `<div class="message-name">Zyths AI</div><div class="typing-indicator"><span></span><span></span><span></span></div>`;
             container.appendChild(typing);
-            container.scrollTop = container.scrollHeight;
+            // Jangan auto-scroll saat typing, biar user tetap di posisi baca
         }
         function hideTyping() {
             const el = document.getElementById('typingIndicator');
@@ -638,17 +657,17 @@
         }
 
         async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const msg = input.value.trim();
+            const msg = userInput.value.trim();
             if (!msg) return;
             if (!API_KEY) {
                 addMessageToChat("⚠️ Masukkan API Key Google Gemini dulu!", false);
-                input.value = '';
+                userInput.value = '';
+                focusInput();
                 return;
             }
             addMessageToChat(msg, true);
-            input.value = '';
-            input.blur();
+            userInput.value = '';
+            focusInput();
             showTyping();
             try {
                 const reply = await callGeminiAPI(msg);
@@ -660,7 +679,7 @@
             }
         }
         document.getElementById('sendBtn').onclick = sendMessage;
-        document.getElementById('userInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
+        userInput.addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
 
         const apiContainer = document.getElementById('apiInputContainer');
         if (API_KEY) apiContainer.classList.add('hide');
@@ -671,6 +690,7 @@
                 apiContainer.classList.remove('hide');
                 document.getElementById('apiKeyInput').value = '';
                 addMessageToChat("🔑 API Key direset. Masukkan API Key baru.", false);
+                focusInput();
             }
         };
         document.getElementById('saveApiBtn').onclick = () => {
@@ -680,13 +700,14 @@
                 localStorage.setItem('zythsai_api_key', key);
                 apiContainer.classList.add('hide');
                 addMessageToChat("✅ API Key berhasil disimpan!", false);
+                focusInput();
             } else {
                 addMessageToChat("❌ API Key tidak valid!", false);
             }
         };
 
         loadChats();
-        document.getElementById('userInput').focus();
+        focusInput();
     </script>
 </body>
     </html>
