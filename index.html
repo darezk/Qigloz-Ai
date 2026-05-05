@@ -18,19 +18,19 @@
         }
 
         body {
-            background: linear-gradient(135deg, #1a0a1a 0%, #2d1a2d 100%);
-            font-family: 'Poppins', 'Inter', sans-serif;
+            background: #ffffff;
+            font-family: 'Inter', 'Poppins', sans-serif;
             overflow: hidden;
         }
 
-        /* INTRO BOOTING SCREEN */
+        /* INTRO BOOTING SCREEN DENGAN GLOW ELEGAN */
         .intro-screen {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #1a0a1a 0%, #2d1a2d 100%);
+            background: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -45,7 +45,7 @@
             text-align: center;
         }
         .intro-text {
-            color: #e8b0e8;
+            color: #712375;
             font-size: clamp(1rem, 6vw, 1.5rem);
             font-weight: 500;
             font-family: 'Poppins', sans-serif;
@@ -53,6 +53,18 @@
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
+            animation: gentleGlow 2s ease-in-out infinite;
+        }
+        @keyframes gentleGlow {
+            0% {
+                text-shadow: 0 0 0px rgba(113, 35, 117, 0);
+            }
+            50% {
+                text-shadow: 0 0 8px rgba(113, 35, 117, 0.5), 0 0 2px rgba(113, 35, 117, 0.3);
+            }
+            100% {
+                text-shadow: 0 0 0px rgba(113, 35, 117, 0);
+            }
         }
         .booting-text {
             margin-right: 8px;
@@ -91,7 +103,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
             z-index: 25;
             display: none;
         }
@@ -104,8 +116,8 @@
             left: -280px;
             width: 280px;
             height: 100%;
-            background: #1f0f1f;
-            border-right: 1px solid #712375;
+            background: #f8f8f8;
+            border-right: 1px solid #e5e5e5;
             display: flex;
             flex-direction: column;
             transition: left 0.3s ease;
@@ -116,24 +128,28 @@
         }
         .sidebar-header {
             padding: 16px;
-            border-bottom: 1px solid #712375;
-            background: #2d1a2d;
+            border-bottom: 1px solid #e5e5e5;
+            background: #ffffff;
         }
         .new-chat-btn {
             width: 100%;
-            background: linear-gradient(135deg, #712375 0%, #9b4d9e 100%);
+            background: #712375;
             border: none;
             color: white;
             padding: 12px;
             border-radius: 12px;
             cursor: pointer;
             font-family: 'Poppins', sans-serif;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            transition: background 0.2s;
+        }
+        .new-chat-btn:hover {
+            background: #5a155a;
         }
         .chat-list {
             flex: 1;
@@ -141,28 +157,29 @@
             padding: 12px;
         }
         .chat-item {
-            background: #2a122a;
+            background: #ffffff;
             border-radius: 10px;
             padding: 12px;
             margin-bottom: 8px;
             cursor: pointer;
-            border: 1px solid #4a1a4d;
+            border: 1px solid #e5e5e5;
             transition: all 0.2s;
             user-select: none;
         }
         .chat-item.active {
-            background: #712375;
-            border-color: #e8b0e8;
+            background: #f3e5f5;
+            border-color: #712375;
         }
         .chat-item.active .chat-title {
-            color: white;
+            color: #712375;
+            font-weight: 600;
         }
         .chat-item.press {
             transform: scale(0.98);
-            background: #4a1a4d;
+            background: #e0e0e0;
         }
         .chat-title {
-            color: #e8b0e8;
+            color: #333333;
             font-size: 13px;
             font-family: 'Inter', sans-serif;
             overflow: hidden;
@@ -175,14 +192,14 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #2d1a2d;
+            background: #ffffff;
             height: 100%;
             width: 100%;
         }
         .chat-header {
-            background: linear-gradient(135deg, #712375 0%, #4a1a4d 100%);
+            background: #ffffff;
             padding: 12px 16px;
-            border-bottom: 2px solid #9b4d9e;
+            border-bottom: 1px solid #e5e5e5;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -196,23 +213,23 @@
         }
         .menu-btn {
             background: transparent;
-            border: 1px solid #9b4d9e;
-            color: #e8b0e8;
+            border: 1px solid #e5e5e5;
+            color: #712375;
             font-size: 20px;
             padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
         }
         .chat-header h1 {
-            color: #e8b0e8;
+            color: #712375;
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
         }
         .api-system-btn {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid #9b4d9e;
-            color: #e8b0e8;
+            background: transparent;
+            border: 1px solid #e5e5e5;
+            color: #712375;
             padding: 5px 12px;
             border-radius: 20px;
             font-size: 10px;
@@ -225,7 +242,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            background: #2a122a;
+            background: #ffffff;
         }
         .message {
             display: flex;
@@ -248,39 +265,41 @@
             font-family: 'Inter', sans-serif;
         }
         .message.user .bubble {
-            background: linear-gradient(135deg, #712375 0%, #9b4d9e 100%);
+            background: #712375;
             color: white;
             border-bottom-right-radius: 5px;
         }
         .message.bot .bubble {
-            background: #4a1a4d;
-            color: #e8b0e8;
+            background: #f0f0f0;
+            color: #333333;
             border-bottom-left-radius: 5px;
-            border: 1px solid #712375;
         }
         .message-name {
-            font-size: 9px;
+            font-size: 10px;
             margin-bottom: 4px;
             padding-left: 8px;
-            color: #b86bb8;
+            color: #999999;
+            font-weight: 500;
         }
         .message.user .message-name {
             text-align: right;
-            color: #c97bc9;
+            color: #712375;
+        }
+        .message.bot .message-name {
+            color: #712375;
         }
         .typing-indicator {
             display: flex;
             gap: 6px;
             padding: 10px 14px;
-            background: #4a1a4d;
+            background: #f0f0f0;
             border-radius: 20px;
             width: fit-content;
-            border: 1px solid #712375;
         }
         .typing-indicator span {
             width: 7px;
             height: 7px;
-            background: #e8b0e8;
+            background: #712375;
             border-radius: 50%;
             animation: bounce 1.2s infinite;
         }
@@ -293,9 +312,9 @@
 
         /* API INPUT */
         .api-input {
-            background: #2a122a;
+            background: #ffffff;
             padding: 8px 12px;
-            border-top: 1px solid #4a1a4d;
+            border-top: 1px solid #e5e5e5;
             display: flex;
             gap: 8px;
             flex-shrink: 0;
@@ -303,84 +322,73 @@
         .api-input.hide { display: none; }
         .api-input input {
             flex: 1;
-            background: #1a0a1a;
-            border: 1px solid #712375;
-            color: #e8b0e8;
+            background: #f8f8f8;
+            border: 1px solid #e5e5e5;
+            color: #333333;
             padding: 8px 12px;
             border-radius: 25px;
             font-size: 11px;
             outline: none;
         }
+        .api-input input:focus {
+            border-color: #712375;
+        }
         .api-input button {
-            background: #4a1a4d;
-            border: 1px solid #712375;
-            color: #e8b0e8;
+            background: #712375;
+            border: none;
+            color: white;
             padding: 6px 14px;
             border-radius: 25px;
             cursor: pointer;
         }
 
-        /* INPUT AREA DENGAN GLOW TEXT EFFECT */
+        /* INPUT AREA */
         .input-area {
-            background: #2d1a2d;
+            background: #ffffff;
             padding: 10px;
-            border-top: 2px solid #712375;
+            border-top: 1px solid #e5e5e5;
             display: flex;
             gap: 10px;
             flex-shrink: 0;
         }
         .input-area input {
             flex: 1;
-            background: #1a0a1a;
-            border: 2px solid #712375;
-            color: #e8b0e8;
+            background: #f8f8f8;
+            border: 1px solid #e5e5e5;
+            color: #333333;
             padding: 10px 14px;
             border-radius: 30px;
             font-size: 13px;
             outline: none;
-            transition: all 0.1s ease;
-            caret-color: #9b4d9e;
+            transition: all 0.2s;
         }
         .input-area input:focus { 
-            border-color: #9b4d9e; 
-        }
-        /* GLOW PADA TEKS SAAT MENGETIK */
-        .input-area input.typing-glow {
-            animation: textGlowPulse 0.2s ease-out;
-        }
-        @keyframes textGlowPulse {
-            0% {
-                text-shadow: 0 0 0px #9b4d9e;
-                color: #e8b0e8;
-            }
-            30% {
-                text-shadow: 0 0 5px #e8b0e8, 0 0 10px #9b4d9e;
-                color: #ffffff;
-            }
-            100% {
-                text-shadow: 0 0 0px #9b4d9e;
-                color: #e8b0e8;
-            }
+            border-color: #712375;
+            box-shadow: 0 0 0 2px rgba(113, 35, 117, 0.1);
         }
         .input-area input::placeholder {
-            color: #7a4a7d;
+            color: #aaaaaa;
             font-size: 12px;
         }
         .btn-send {
-            background: linear-gradient(135deg, #712375 0%, #9b4d9e 100%);
+            background: #712375;
             border: none;
             color: white;
             padding: 8px 18px;
             border-radius: 30px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 13px;
+            transition: background 0.2s;
+        }
+        .btn-send:hover {
+            background: #5a155a;
         }
         .btn-send:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
-    <!-- INTRO BOOTING -->
+    <!-- INTRO BOOTING DENGAN GLOW ELEGAN -->
     <div class="intro-screen" id="introScreen">
         <div class="intro-content">
             <div class="intro-text">
@@ -433,21 +441,6 @@
         // INTRO
         const introScreen = document.getElementById('introScreen');
         setTimeout(() => introScreen.classList.add('hide'), 5000);
-
-        // TEXT GLOW EFFECT SETIAP MENGETIK
-        const userInput = document.getElementById('userInput');
-        let glowTimeout = null;
-        
-        userInput.addEventListener('input', function() {
-            // Tambah class glow
-            this.classList.add('typing-glow');
-            
-            // Hapus glow setelah animasi selesai
-            clearTimeout(glowTimeout);
-            glowTimeout = setTimeout(() => {
-                this.classList.remove('typing-glow');
-            }, 200);
-        });
 
         // DATA
         let chats = [];
@@ -712,4 +705,4 @@
         document.getElementById('userInput').focus();
     </script>
 </body>
-    </html>
+            </html>
