@@ -175,7 +175,7 @@
             align-items: center;
             gap: 10px;
         }
-        .menu-btn {
+        .menu-btn, .new-chat-icon {
             background: transparent;
             border: 1px solid #e5e5e5;
             color: #712375;
@@ -183,6 +183,14 @@
             padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .menu-btn:hover, .new-chat-icon:hover {
+            background: #f3e5f5;
+            border-color: #712375;
         }
         .chat-header h1 {
             color: #712375;
@@ -203,24 +211,6 @@
             border-radius: 20px;
             font-size: 10px;
             cursor: pointer;
-        }
-        .new-chat-icon {
-            background: transparent;
-            border: 1px solid #712375;
-            color: #712375;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .new-chat-icon:hover {
-            background: #f3e5f5;
         }
         .chat-messages {
             flex: 1;
@@ -494,11 +484,10 @@
             overlayEl.classList.remove('show'); 
         }
         
-        // Tombol menu
         document.getElementById('menuBtn').onclick = openSidebar;
         overlayEl.onclick = closeSidebar;
         
-        // SWIPE GESTURE (touch)
+        // SWIPE GESTURE
         document.body.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
@@ -510,13 +499,10 @@
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
             
-            // Horizontal swipe (abaikan jika terlalu banyak vertical)
             if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
                 if (deltaX > 0 && touchStartX < 30) {
-                    // Swipe kanan dari tepi kiri -> buka sidebar
                     openSidebar();
                 } else if (deltaX < 0 && sidebarEl.classList.contains('open')) {
-                    // Swipe kiri -> tutup sidebar
                     closeSidebar();
                 }
             }
@@ -553,82 +539,72 @@
                 div.className = `chat-item ${chat.id === activeChatId ? 'active' : ''}`;
                 div.innerHTML = `<span class="chat-title">${escapeHtml(chat.title)}</span>`;
                 
-                // KLIK UNTUK PINDAH OBROLAN (FIXED!)
-                div.onclick = (e) => {
+                // KLIK UNTUK PINDAH OBROLAN
+                div.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (chat.id !== activeChatId) {
                         activeChatId = chat.id;
                         saveChats();
                         renderChatList();
                         renderCurrentChat();
+                        closeSidebar();
                     }
-                    closeSidebar();
-                };
+                });
                 
                 // LONG PRESS untuk hapus
-                div.ontouchstart = (e) => {
+                let pressTimer;
+                div.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    currentPressItem = div;
-                    div.classList.add('press');
-                    longPressTimer = setTimeout(() => {
-                        if (currentPressItem === div) {
-                            if (chats.length === 1) {
-                                alert("Tidak bisa menghapus obrolan terakhir!");
-                            } else {
-                                if (confirm(`Hapus obrolan "${chat.title}"?`)) {
-                                    chats = chats.filter(c => c.id !== chat.id);
-                                    if (activeChatId === chat.id) activeChatId = chats[0].id;
-                                    saveChats();
-                                    renderChatList();
-                                    renderCurrentChat();
-                                }
+                    pressTimer = setTimeout(() => {
+                        if (chats.length === 1) {
+                            alert("Tidak bisa menghapus obrolan terakhir!");
+                        } else {
+                            if (confirm(`Hapus obrolan "${chat.title}"?`)) {
+                                chats = chats.filter(c => c.id !== chat.id);
+                                if (activeChatId === chat.id) activeChatId = chats[0].id;
+                                saveChats();
+                                renderChatList();
+                                renderCurrentChat();
                             }
                         }
                         div.classList.remove('press');
-                        currentPressItem = null;
                     }, 500);
-                };
-                div.ontouchend = () => {
-                    clearTimeout(longPressTimer);
-                    div.classList.remove('press');
-                    currentPressItem = null;
-                };
-                div.ontouchmove = () => {
-                    clearTimeout(longPressTimer);
-                    div.classList.remove('press');
-                    currentPressItem = null;
-                };
-                div.onmousedown = (e) => {
-                    currentPressItem = div;
                     div.classList.add('press');
-                    longPressTimer = setTimeout(() => {
-                        if (currentPressItem === div) {
-                            if (chats.length === 1) {
-                                alert("Tidak bisa menghapus obrolan terakhir!");
-                            } else {
-                                if (confirm(`Hapus obrolan "${chat.title}"?`)) {
-                                    chats = chats.filter(c => c.id !== chat.id);
-                                    if (activeChatId === chat.id) activeChatId = chats[0].id;
-                                    saveChats();
-                                    renderChatList();
-                                    renderCurrentChat();
-                                }
+                });
+                div.addEventListener('touchend', () => {
+                    clearTimeout(pressTimer);
+                    div.classList.remove('press');
+                });
+                div.addEventListener('touchmove', () => {
+                    clearTimeout(pressTimer);
+                    div.classList.remove('press');
+                });
+                // Mouse support
+                div.addEventListener('mousedown', (e) => {
+                    pressTimer = setTimeout(() => {
+                        if (chats.length === 1) {
+                            alert("Tidak bisa menghapus obrolan terakhir!");
+                        } else {
+                            if (confirm(`Hapus obrolan "${chat.title}"?`)) {
+                                chats = chats.filter(c => c.id !== chat.id);
+                                if (activeChatId === chat.id) activeChatId = chats[0].id;
+                                saveChats();
+                                renderChatList();
+                                renderCurrentChat();
                             }
                         }
                         div.classList.remove('press');
-                        currentPressItem = null;
                     }, 500);
-                };
-                div.onmouseup = () => {
-                    clearTimeout(longPressTimer);
+                    div.classList.add('press');
+                });
+                div.addEventListener('mouseup', () => {
+                    clearTimeout(pressTimer);
                     div.classList.remove('press');
-                    currentPressItem = null;
-                };
-                div.onmouseleave = () => {
-                    clearTimeout(longPressTimer);
+                });
+                div.addEventListener('mouseleave', () => {
+                    clearTimeout(pressTimer);
                     div.classList.remove('press');
-                    currentPressItem = null;
-                };
+                });
                 container.appendChild(div);
             });
         }
