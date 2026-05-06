@@ -479,12 +479,48 @@
         let longPressTimer = null;
         let currentPressItem = null;
 
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('show'); }
-        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+        // SIDEBAR SWIPE GESTURE
+        const sidebarEl = document.getElementById('sidebar');
+        const overlayEl = document.getElementById('sidebarOverlay');
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        function openSidebar() { 
+            sidebarEl.classList.add('open'); 
+            overlayEl.classList.add('show'); 
+        }
+        function closeSidebar() { 
+            sidebarEl.classList.remove('open'); 
+            overlayEl.classList.remove('show'); 
+        }
+        
+        // Tombol menu
         document.getElementById('menuBtn').onclick = openSidebar;
-        overlay.onclick = closeSidebar;
+        overlayEl.onclick = closeSidebar;
+        
+        // SWIPE GESTURE (touch)
+        document.body.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        
+        document.body.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            
+            // Horizontal swipe (abaikan jika terlalu banyak vertical)
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                if (deltaX > 0 && touchStartX < 30) {
+                    // Swipe kanan dari tepi kiri -> buka sidebar
+                    openSidebar();
+                } else if (deltaX < 0 && sidebarEl.classList.contains('open')) {
+                    // Swipe kiri -> tutup sidebar
+                    closeSidebar();
+                }
+            }
+        });
 
         function loadChats() {
             const saved = localStorage.getItem('zythsai_chats');
@@ -517,15 +553,19 @@
                 div.className = `chat-item ${chat.id === activeChatId ? 'active' : ''}`;
                 div.innerHTML = `<span class="chat-title">${escapeHtml(chat.title)}</span>`;
                 
+                // KLIK UNTUK PINDAH OBROLAN (FIXED!)
                 div.onclick = (e) => {
                     e.stopPropagation();
-                    activeChatId = chat.id;
-                    saveChats();
-                    renderChatList();
-                    renderCurrentChat();
+                    if (chat.id !== activeChatId) {
+                        activeChatId = chat.id;
+                        saveChats();
+                        renderChatList();
+                        renderCurrentChat();
+                    }
                     closeSidebar();
                 };
                 
+                // LONG PRESS untuk hapus
                 div.ontouchstart = (e) => {
                     e.preventDefault();
                     currentPressItem = div;
