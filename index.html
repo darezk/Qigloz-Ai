@@ -542,20 +542,18 @@
                 div.innerHTML = `<span class="chat-title">${escapeHtml(chat.title)}</span>`;
                 div.setAttribute('data-chat-id', chat.id);
                 
-                // ========== KLIK LANGSUNG PAKAI ONCLICK ==========
                 div.onclick = function(e) {
                     e.stopPropagation();
                     const chatId = this.getAttribute('data-chat-id');
                     if (chatId && chatId !== activeChatId) {
                         activeChatId = chatId;
                         saveChats();
-                        renderChatList();     // Refresh daftar (update active class)
-                        renderCurrentChat();  // Tampilkan chat yang dipilih
+                        renderChatList();
+                        renderCurrentChat();
                         closeSidebar();
                     }
                 };
                 
-                // ========== LONG PRESS DELETE ==========
                 let pressTimer;
                 div.ontouchstart = function(e) {
                     e.preventDefault();
@@ -586,7 +584,6 @@
                     clearTimeout(pressTimer);
                     this.classList.remove('press');
                 };
-                // Mouse support
                 div.onmousedown = function() {
                     pressTimer = setTimeout(() => {
                         const chatId = this.getAttribute('data-chat-id');
@@ -626,6 +623,7 @@
             }); 
         }
 
+        // ========== RENDER CHAT AKTIF (PASTIKAN MARKDOWN SELALU DI-PARSE) ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -634,6 +632,7 @@
             chat.messages.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
+                // ===== INI KUNCI: PASTIKAN parseMarkdown() DIPANGGIL UNTUK PESAN BOT =====
                 const content = msg.role === 'bot' ? parseMarkdown(msg.content) : escapeHtml(msg.content).replace(/\n/g, '<br>');
                 div.innerHTML = `<div class="message-name">${msg.role === 'user' ? 'Kamu' : 'Qigloz AI'}</div><div class="bubble">${content}</div>`;
                 container.appendChild(div);
@@ -657,7 +656,7 @@
             return html;
         }
 
-        // ========== TYPING EFFECT ==========
+        // ========== TYPING EFFECT LEBIH CEPAT (7ms) ==========
         async function typeMessage(text, container) {
             const bubble = container.querySelector('.bubble');
             const rawText = text;
@@ -670,7 +669,7 @@
                 const partialHtml = parseMarkdown(tempText);
                 bubble.innerHTML = partialHtml;
                 scrollToBottom();
-                await new Promise(r => setTimeout(r, 12));
+                await new Promise(r => setTimeout(r, 7));
             }
             
             bubble.innerHTML = fullHtml;
