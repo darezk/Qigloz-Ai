@@ -531,7 +531,7 @@
             localStorage.setItem('qigloz_activeChat', activeChatId);
         }
 
-        // ========== RENDER CHAT LIST (NAVIGASI 100% WORK) ==========
+        // ========== RENDER CHAT LIST (NAVIGASI) ==========
         function renderChatList() {
             const container = document.getElementById('chatList');
             if (!container) return;
@@ -623,7 +623,7 @@
             }); 
         }
 
-        // ========== RENDER CHAT AKTIF (PASTIKAN MARKDOWN SELALU DI-PARSE) ==========
+        // ========== RENDER CHAT AKTIF (LANGSUNG PAKAI HTML) ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -632,8 +632,8 @@
             chat.messages.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
-                // ===== INI KUNCI: PASTIKAN parseMarkdown() DIPANGGIL UNTUK PESAN BOT =====
-                const content = msg.role === 'bot' ? parseMarkdown(msg.content) : escapeHtml(msg.content).replace(/\n/g, '<br>');
+                // ===== KUNCI: LANGSUNG TAMPILKAN `content` (sudah HTML) =====
+                const content = msg.role === 'bot' ? msg.content : escapeHtml(msg.content).replace(/\n/g, '<br>');
                 div.innerHTML = `<div class="message-name">${msg.role === 'user' ? 'Kamu' : 'Qigloz AI'}</div><div class="bubble">${content}</div>`;
                 container.appendChild(div);
             });
@@ -656,7 +656,7 @@
             return html;
         }
 
-        // ========== TYPING EFFECT LEBIH CEPAT (7ms) ==========
+        // ========== TYPING EFFECT (SIMPAN HTML KE LOCALSTORAGE) ==========
         async function typeMessage(text, container) {
             const bubble = container.querySelector('.bubble');
             const rawText = text;
@@ -675,9 +675,10 @@
             bubble.innerHTML = fullHtml;
             scrollToBottom();
             
+            // ===== SIMPAN HTML KE LOCALSTORAGE (BUKAN TEKS MENTAH) =====
             const chat = chats.find(c => c.id === activeChatId);
             if (chat) {
-                chat.messages.push({ role: 'assistant', content: rawText });
+                chat.messages.push({ role: 'assistant', content: fullHtml }); // <-- fullHtml = HTML sudah di-parse
                 saveChats();
                 renderChatList();
             }
@@ -754,6 +755,7 @@
         function addMessageToChat(text, isUser = true) {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
+            // ===== UNTUK USER, TETAP SIMPAN TEKS MENTAH (BISA DI-ESCAPE NANTI) =====
             chat.messages.push({ role: isUser ? 'user' : 'assistant', content: text });
             if (isUser && chat.messages.filter(m => m.role === 'user').length === 1) {
                 chat.title = text.slice(0, 30) + (text.length > 30 ? '...' : '');
