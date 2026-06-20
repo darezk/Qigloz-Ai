@@ -27,6 +27,19 @@
         .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #f8f8f8; border-right: 1px solid #e5e5e5; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 30; }
         .sidebar.open { left: 0; }
         .sidebar-header { padding: 16px; border-bottom: 1px solid #e5e5e5; background: #ffffff; }
+        .sidebar-header .reset-btn { 
+            background: #e74c3c; 
+            border: none; 
+            color: white; 
+            padding: 6px 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: 500;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .sidebar-header .reset-btn:hover { background: #c0392b; }
         .chat-list { flex: 1; overflow-y: auto; padding: 12px; }
         .chat-item { background: #ffffff; border-radius: 10px; padding: 12px; margin-bottom: 8px; cursor: pointer; border: 1px solid #e5e5e5; transition: all 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; }
         .chat-item.active { background: #f3e5f5; border-color: #712375; }
@@ -95,7 +108,12 @@
     <div class="app-container">
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-header"></div>
+            <div class="sidebar-header">
+                <div style="display: flex; gap: 8px;">
+                    <button class="new-chat-btn" id="newChatBtn" style="flex:1; background:#712375; border:none; color:white; padding:8px; border-radius:8px; cursor:pointer;">+ New Chat</button>
+                </div>
+                <button class="reset-btn" id="resetBtn">🗑️ Reset Semua Chat</button>
+            </div>
             <div class="chat-list" id="chatList"></div>
         </div>
 
@@ -107,7 +125,7 @@
                 </div>
                 <div class="header-right">
                     <button class="api-system-btn" id="apiSystemBtn">API System</button>
-                    <button class="new-chat-icon" id="newChatBtn">+</button>
+                    <button class="new-chat-icon" id="newChatBtnMobile">+</button>
                 </div>
             </div>
 
@@ -178,6 +196,15 @@
                 } else if (deltaX < 0 && sidebarEl.classList.contains('open')) {
                     closeSidebar();
                 }
+            }
+        });
+
+        // ========== RESET CHAT ==========
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            if (confirm("Yakin ingin menghapus semua chat?")) {
+                localStorage.removeItem('qigloz_chats');
+                localStorage.removeItem('qigloz_activeChat');
+                location.reload();
             }
         });
 
@@ -294,7 +321,7 @@
             }); 
         }
 
-        // ========== RENDER CHAT AKTIF (FIX DETEKSI HTML) ==========
+        // ========== RENDER CHAT AKTIF (PASTIKAN HTML) ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -306,11 +333,11 @@
                 
                 let content;
                 if (msg.role === 'bot') {
-                    // ===== DETEKSI HTML: cek apakah ada < dan > =====
+                    // Cek apakah konten mengandung tag HTML
                     if (msg.content.includes('<') && msg.content.includes('>')) {
-                        content = msg.content; // Sudah HTML, langsung tampilkan
+                        content = msg.content;
                     } else {
-                        content = parseMarkdown(msg.content); // Masih teks mentah
+                        content = parseMarkdown(msg.content);
                     }
                 } else {
                     content = escapeHtml(msg.content).replace(/\n/g, '<br>');
@@ -338,7 +365,6 @@
             return html;
         }
 
-        // ========== TYPING EFFECT (SIMPAN HTML) ==========
         async function typeMessage(text, container) {
             const bubble = container.querySelector('.bubble');
             const rawText = text;
@@ -460,6 +486,7 @@
             closeSidebar();
         }
         document.getElementById('newChatBtn').onclick = createNewChat;
+        document.getElementById('newChatBtnMobile').onclick = createNewChat;
 
         document.getElementById('sendBtn').onclick = sendMessage;
         document.getElementById('userInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
