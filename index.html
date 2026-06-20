@@ -510,6 +510,7 @@
             }
         });
 
+        // ========== LOAD & SAVE DATA ==========
         function loadChats() {
             const saved = localStorage.getItem('qiuzo_chats');
             if (saved) {
@@ -531,7 +532,8 @@
             localStorage.setItem('qiuzo_chats', JSON.stringify(chats));
             localStorage.setItem('qiuzo_activeChat', activeChatId);
         }
-        
+
+        // ========== RENDER CHAT LIST (NAVIGASI) ==========
         function renderChatList() {
             const container = document.getElementById('chatList');
             if (!container) return;
@@ -542,7 +544,7 @@
                 div.innerHTML = `<span class="chat-title">${escapeHtml(chat.title)}</span>`;
                 div.setAttribute('data-chat-id', chat.id);
                 
-                // === KLIK PINDAH OBROLAN (PAKAI ONCLICK LANGSUNG) ===
+                // KLIK UNTUK PINDAH OBROLAN (PAKAI ONCLICK)
                 div.onclick = function(e) {
                     e.stopPropagation();
                     const chatId = this.getAttribute('data-chat-id');
@@ -555,7 +557,7 @@
                     }
                 };
                 
-                // === LONG PRESS DELETE ===
+                // LONG PRESS DELETE
                 let pressTimer;
                 div.ontouchstart = function(e) {
                     e.preventDefault();
@@ -619,13 +621,14 @@
                 container.appendChild(div);
             });
         }
-        
+
         function escapeHtml(text) { 
             return text.replace(/[&<>]/g, function(m) { 
                 return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]; 
             }); 
         }
-        
+
+        // ========== RENDER CHAT YANG AKTIF ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -641,34 +644,7 @@
             scrollToBottom();
         }
 
-        function createNewChat() {
-            const newChat = {
-                id: Date.now().toString(),
-                title: "Obrolan Baru",
-                messages: [{ role: "assistant", content: "Halo!, saya Qiuzo AI. Ada yang bisa saya bantu?" }]
-            };
-            chats.unshift(newChat);
-            activeChatId = newChat.id;
-            saveChats();
-            renderChatList();
-            renderCurrentChat();
-            closeSidebar();
-        }
-        document.getElementById('newChatBtn').onclick = createNewChat;
-
-        function addMessageToChat(text, isUser = true) {
-            const chat = chats.find(c => c.id === activeChatId);
-            if (!chat) return;
-            chat.messages.push({ role: isUser ? 'user' : 'assistant', content: text });
-            if (isUser && chat.messages.filter(m => m.role === 'user').length === 1) {
-                chat.title = text.slice(0, 30) + (text.length > 30 ? '...' : '');
-            }
-            saveChats();
-            renderChatList();
-            renderCurrentChat();
-            scrollToBottom();
-        }
-
+        // ========== MARKDOWN PARSER ==========
         function parseMarkdown(text) {
             let html = text;
             html = html.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m]));
@@ -685,20 +661,30 @@
             return html;
         }
 
-        // === TYPING EFFECT ===
+        // ========== TYPING EFFECT LANGSUNG MARKDOWN ==========
         async function typeMessage(text, container) {
             const bubble = container.querySelector('.bubble');
             const rawText = text;
-            let displayText = '';
-            bubble.textContent = '';
+            
+            // Parse Markdown final
+            const fullHtml = parseMarkdown(rawText);
+            
+            // Tampilkan karakter per karakter, tapi langsung di-parse
+            let tempText = '';
             for (let i = 0; i < rawText.length; i++) {
-                displayText += rawText[i];
-                bubble.textContent = displayText;
+                tempText += rawText[i];
+                // Parse sebagian teks yang sudah diketik
+                const partialHtml = parseMarkdown(tempText);
+                bubble.innerHTML = partialHtml;
                 scrollToBottom();
                 await new Promise(r => setTimeout(r, 12));
             }
-            bubble.innerHTML = parseMarkdown(rawText);
+            
+            // Pastikan final = full HTML
+            bubble.innerHTML = fullHtml;
             scrollToBottom();
+            
+            // Simpan ke localStorage
             const chat = chats.find(c => c.id === activeChatId);
             if (chat) {
                 chat.messages.push({ role: 'assistant', content: rawText });
@@ -707,6 +693,7 @@
             }
         }
 
+        // ========== TYPING INDICATOR ==========
         async function showTypingIndicator() {
             const container = document.getElementById('chatMessages');
             const typingDiv = document.createElement('div');
@@ -729,6 +716,7 @@
             if (el) el.remove();
         }
 
+        // ========== API CALL ==========
         async function callGeminiAPI(prompt) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
             const res = await fetch(url, {
@@ -740,6 +728,7 @@
             return (await res.json()).candidates[0].content.parts[0].text;
         }
 
+        // ========== SEND MESSAGE ==========
         async function sendMessage() {
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
@@ -749,12 +738,18 @@
                 input.value = '';
                 return;
             }
+            // Tampilkan pesan user
             addMessageToChat(msg, true);
             input.value = '';
+            
+            // Tampilkan typing indicator
             await showTypingIndicator();
+            
             try {
                 const reply = await callGeminiAPI(msg);
                 hideTypingIndicator();
+                
+                // Buat elemen pesan baru
                 const container = document.getElementById('chatMessages');
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message bot';
@@ -763,16 +758,51 @@
                     <div class="bubble"></div>
                 `;
                 container.appendChild(messageDiv);
+                
+                // Jalankan typing effect langsung dengan Markdown
                 await typeMessage(reply, messageDiv);
+                
             } catch (err) {
                 hideTypingIndicator();
                 addMessageToChat(`❌ ${err.message}`, false);
             }
         }
 
+        // ========== ADD MESSAGE (USER / SYSTEM) ==========
+        function addMessageToChat(text, isUser = true) {
+            const chat = chats.find(c => c.id === activeChatId);
+            if (!chat) return;
+            chat.messages.push({ role: isUser ? 'user' : 'assistant', content: text });
+            if (isUser && chat.messages.filter(m => m.role === 'user').length === 1) {
+                chat.title = text.slice(0, 30) + (text.length > 30 ? '...' : '');
+            }
+            saveChats();
+            renderChatList();
+            renderCurrentChat();
+            scrollToBottom();
+        }
+
+        // ========== NEW CHAT ==========
+        function createNewChat() {
+            const newChat = {
+                id: Date.now().toString(),
+                title: "Obrolan Baru",
+                messages: [{ role: "assistant", content: "Halo!, saya Qiuzo AI. Ada yang bisa saya bantu?" }]
+            };
+            chats.unshift(newChat);
+            activeChatId = newChat.id;
+            saveChats();
+            renderChatList();
+            renderCurrentChat();
+            closeSidebar();
+        }
+        document.getElementById('newChatBtn').onclick = createNewChat;
+
+        // ========== EVENT LISTENERS ==========
         document.getElementById('sendBtn').onclick = sendMessage;
         document.getElementById('userInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
 
+        // ========== API SYSTEM ==========
         const apiContainer = document.getElementById('apiInputContainer');
         if (API_KEY) apiContainer.classList.add('hide');
         document.getElementById('apiSystemBtn').onclick = () => {
@@ -796,6 +826,7 @@
             }
         };
 
+        // ========== START ==========
         loadChats();
     </script>
 </body>
