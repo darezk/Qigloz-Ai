@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Qiuzo AI - AI Assistant</title>
+    <title>Qigloz AI - AI Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -414,7 +414,7 @@
     <div class="intro-screen" id="introScreen">
         <div class="intro-content">
             <div class="intro-text">
-                <span class="booting-text">Qiuzo AI is booting</span>
+                <span class="booting-text">Qigloz AI is booting</span>
                 <span class="dots"><span>.</span><span>.</span><span>.</span></span>
             </div>
         </div>
@@ -431,7 +431,7 @@
             <div class="chat-header">
                 <div class="header-left">
                     <button class="menu-btn" id="menuBtn">☰</button>
-                    <h1>Qiuzo AI</h1>
+                    <h1>Qigloz AI</h1>
                 </div>
                 <div class="header-right">
                     <button class="api-system-btn" id="apiSystemBtn">API System</button>
@@ -441,8 +441,8 @@
 
             <div class="chat-messages" id="chatMessages">
                 <div class="message bot">
-                    <div class="message-name">Qiuzo AI</div>
-                    <div class="bubble">Halo!, saya Qiuzo AI. Ada yang bisa saya bantu?</div>
+                    <div class="message-name">Qigloz AI</div>
+                    <div class="bubble">Halo!, saya Qigloz AI. Ada yang bisa saya bantu?</div>
                 </div>
             </div>
 
@@ -474,9 +474,8 @@
 
         let chats = [];
         let activeChatId = null;
-        let API_KEY = localStorage.getItem('qiuzo_api_key') || '';
+        let API_KEY = localStorage.getItem('qigloz_api_key') || '';
 
-        // SIDEBAR SWIPE GESTURE
         const sidebarEl = document.getElementById('sidebar');
         const overlayEl = document.getElementById('sidebarOverlay');
         let touchStartX = 0;
@@ -510,30 +509,29 @@
             }
         });
 
-        // ========== LOAD & SAVE DATA ==========
         function loadChats() {
-            const saved = localStorage.getItem('qiuzo_chats');
+            const saved = localStorage.getItem('qigloz_chats');
             if (saved) {
                 chats = JSON.parse(saved);
             } else {
                 chats = [{
                     id: Date.now().toString(),
                     title: "Obrolan Baru",
-                    messages: [{ role: "assistant", content: "Halo!, saya Qiuzo AI. Ada yang bisa saya bantu?" }]
+                    messages: [{ role: "assistant", content: "Halo!, saya Qigloz AI. Ada yang bisa saya bantu?" }]
                 }];
             }
-            activeChatId = localStorage.getItem('qiuzo_activeChat') || chats[0]?.id;
+            activeChatId = localStorage.getItem('qigloz_activeChat') || chats[0]?.id;
             if (!chats.find(c => c.id === activeChatId) && chats.length) activeChatId = chats[0].id;
             saveChats();
             renderChatList();
             renderCurrentChat();
         }
         function saveChats() {
-            localStorage.setItem('qiuzo_chats', JSON.stringify(chats));
-            localStorage.setItem('qiuzo_activeChat', activeChatId);
+            localStorage.setItem('qigloz_chats', JSON.stringify(chats));
+            localStorage.setItem('qigloz_activeChat', activeChatId);
         }
 
-        // ========== RENDER CHAT LIST (NAVIGASI) ==========
+        // ========== RENDER CHAT LIST (NAVIGASI 100% WORK) ==========
         function renderChatList() {
             const container = document.getElementById('chatList');
             if (!container) return;
@@ -544,20 +542,20 @@
                 div.innerHTML = `<span class="chat-title">${escapeHtml(chat.title)}</span>`;
                 div.setAttribute('data-chat-id', chat.id);
                 
-                // KLIK UNTUK PINDAH OBROLAN (PAKAI ONCLICK)
+                // ========== KLIK LANGSUNG PAKAI ONCLICK ==========
                 div.onclick = function(e) {
                     e.stopPropagation();
                     const chatId = this.getAttribute('data-chat-id');
                     if (chatId && chatId !== activeChatId) {
                         activeChatId = chatId;
                         saveChats();
-                        renderChatList();
-                        renderCurrentChat();
+                        renderChatList();     // Refresh daftar (update active class)
+                        renderCurrentChat();  // Tampilkan chat yang dipilih
                         closeSidebar();
                     }
                 };
                 
-                // LONG PRESS DELETE
+                // ========== LONG PRESS DELETE ==========
                 let pressTimer;
                 div.ontouchstart = function(e) {
                     e.preventDefault();
@@ -628,7 +626,6 @@
             }); 
         }
 
-        // ========== RENDER CHAT YANG AKTIF ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -638,13 +635,12 @@
                 const div = document.createElement('div');
                 div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
                 const content = msg.role === 'bot' ? parseMarkdown(msg.content) : escapeHtml(msg.content).replace(/\n/g, '<br>');
-                div.innerHTML = `<div class="message-name">${msg.role === 'user' ? 'Kamu' : 'Qiuzo AI'}</div><div class="bubble">${content}</div>`;
+                div.innerHTML = `<div class="message-name">${msg.role === 'user' ? 'Kamu' : 'Qigloz AI'}</div><div class="bubble">${content}</div>`;
                 container.appendChild(div);
             });
             scrollToBottom();
         }
 
-        // ========== MARKDOWN PARSER ==========
         function parseMarkdown(text) {
             let html = text;
             html = html.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m]));
@@ -661,30 +657,25 @@
             return html;
         }
 
-        // ========== TYPING EFFECT LANGSUNG MARKDOWN ==========
+        // ========== TYPING EFFECT ==========
         async function typeMessage(text, container) {
             const bubble = container.querySelector('.bubble');
             const rawText = text;
             
-            // Parse Markdown final
             const fullHtml = parseMarkdown(rawText);
             
-            // Tampilkan karakter per karakter, tapi langsung di-parse
             let tempText = '';
             for (let i = 0; i < rawText.length; i++) {
                 tempText += rawText[i];
-                // Parse sebagian teks yang sudah diketik
                 const partialHtml = parseMarkdown(tempText);
                 bubble.innerHTML = partialHtml;
                 scrollToBottom();
                 await new Promise(r => setTimeout(r, 12));
             }
             
-            // Pastikan final = full HTML
             bubble.innerHTML = fullHtml;
             scrollToBottom();
             
-            // Simpan ke localStorage
             const chat = chats.find(c => c.id === activeChatId);
             if (chat) {
                 chat.messages.push({ role: 'assistant', content: rawText });
@@ -693,14 +684,13 @@
             }
         }
 
-        // ========== TYPING INDICATOR ==========
         async function showTypingIndicator() {
             const container = document.getElementById('chatMessages');
             const typingDiv = document.createElement('div');
             typingDiv.className = 'message bot';
             typingDiv.id = 'typingIndicator';
             typingDiv.innerHTML = `
-                <div class="message-name">Qiuzo AI</div>
+                <div class="message-name">Qigloz AI</div>
                 <div class="typing-indicator">
                     <span class="dot"></span>
                     <span class="dot"></span>
@@ -716,7 +706,6 @@
             if (el) el.remove();
         }
 
-        // ========== API CALL ==========
         async function callGeminiAPI(prompt) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
             const res = await fetch(url, {
@@ -728,7 +717,6 @@
             return (await res.json()).candidates[0].content.parts[0].text;
         }
 
-        // ========== SEND MESSAGE ==========
         async function sendMessage() {
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
@@ -738,28 +726,24 @@
                 input.value = '';
                 return;
             }
-            // Tampilkan pesan user
             addMessageToChat(msg, true);
             input.value = '';
             
-            // Tampilkan typing indicator
             await showTypingIndicator();
             
             try {
                 const reply = await callGeminiAPI(msg);
                 hideTypingIndicator();
                 
-                // Buat elemen pesan baru
                 const container = document.getElementById('chatMessages');
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message bot';
                 messageDiv.innerHTML = `
-                    <div class="message-name">Qiuzo AI</div>
+                    <div class="message-name">Qigloz AI</div>
                     <div class="bubble"></div>
                 `;
                 container.appendChild(messageDiv);
                 
-                // Jalankan typing effect langsung dengan Markdown
                 await typeMessage(reply, messageDiv);
                 
             } catch (err) {
@@ -768,7 +752,6 @@
             }
         }
 
-        // ========== ADD MESSAGE (USER / SYSTEM) ==========
         function addMessageToChat(text, isUser = true) {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -782,12 +765,11 @@
             scrollToBottom();
         }
 
-        // ========== NEW CHAT ==========
         function createNewChat() {
             const newChat = {
                 id: Date.now().toString(),
                 title: "Obrolan Baru",
-                messages: [{ role: "assistant", content: "Halo!, saya Qiuzo AI. Ada yang bisa saya bantu?" }]
+                messages: [{ role: "assistant", content: "Halo!, saya Qigloz AI. Ada yang bisa saya bantu?" }]
             };
             chats.unshift(newChat);
             activeChatId = newChat.id;
@@ -798,16 +780,14 @@
         }
         document.getElementById('newChatBtn').onclick = createNewChat;
 
-        // ========== EVENT LISTENERS ==========
         document.getElementById('sendBtn').onclick = sendMessage;
         document.getElementById('userInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
 
-        // ========== API SYSTEM ==========
         const apiContainer = document.getElementById('apiInputContainer');
         if (API_KEY) apiContainer.classList.add('hide');
         document.getElementById('apiSystemBtn').onclick = () => {
             if (confirm("Reset API Key?")) {
-                localStorage.removeItem('qiuzo_api_key');
+                localStorage.removeItem('qigloz_api_key');
                 API_KEY = '';
                 apiContainer.classList.remove('hide');
                 document.getElementById('apiKeyInput').value = '';
@@ -818,7 +798,7 @@
             const key = document.getElementById('apiKeyInput').value.trim();
             if (key && key.startsWith('AIza')) {
                 API_KEY = key;
-                localStorage.setItem('qiuzo_api_key', key);
+                localStorage.setItem('qigloz_api_key', key);
                 apiContainer.classList.add('hide');
                 addMessageToChat("✅ API Key berhasil disimpan!", false);
             } else {
@@ -826,7 +806,6 @@
             }
         };
 
-        // ========== START ==========
         loadChats();
     </script>
 </body>
