@@ -6,7 +6,6 @@
     <title>Qigloz AI - AI Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ===== CSS ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; width: 100%; }
         body { background: #ffffff; font-family: 'Inter', 'Poppins', sans-serif; overflow: hidden; }
@@ -295,7 +294,7 @@
             }); 
         }
 
-        // ========== RENDER CHAT AKTIF (FIX MARKDOWN) ==========
+        // ========== RENDER CHAT AKTIF (FIX DETEKSI HTML) ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -307,11 +306,9 @@
                 
                 let content;
                 if (msg.role === 'bot') {
-                    // Cek apakah konten sudah berupa HTML
-                    if (msg.content.includes('<strong>') || msg.content.includes('<em>') || 
-                        msg.content.includes('<ul>') || msg.content.includes('<h1>') || 
-                        msg.content.includes('<br>') || msg.content.includes('<h3>')) {
-                        content = msg.content; // Sudah HTML
+                    // ===== DETEKSI HTML: cek apakah ada < dan > =====
+                    if (msg.content.includes('<') && msg.content.includes('>')) {
+                        content = msg.content; // Sudah HTML, langsung tampilkan
                     } else {
                         content = parseMarkdown(msg.content); // Masih teks mentah
                     }
@@ -360,7 +357,6 @@
             bubble.innerHTML = fullHtml;
             scrollToBottom();
             
-            // ===== SIMPAN HTML KE LOCALSTORAGE =====
             const chat = chats.find(c => c.id === activeChatId);
             if (chat) {
                 chat.messages.push({ role: 'assistant', content: fullHtml });
@@ -494,4 +490,4 @@
         loadChats();
     </script>
 </body>
-                    </html>
+    </html>
