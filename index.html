@@ -307,7 +307,7 @@
             }); 
         }
 
-        // ========== RENDER CHAT AKTIF (FIX: LANGSUNG TAMPILKAN HTML) ==========
+        // ========== RENDER CHAT AKTIF (LANGSUNG TAMPILKAN HTML) ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -319,8 +319,7 @@
                 
                 let content;
                 if (msg.role === 'bot') {
-                    // ===== LANGSUNG TAMPILKAN, TANPA DETEKSI =====
-                    content = msg.content;
+                    content = msg.content; // Langsung tampilkan HTML
                 } else {
                     content = escapeHtml(msg.content).replace(/\n/g, '<br>');
                 }
@@ -347,6 +346,7 @@
             return html;
         }
 
+        // ========== TYPING EFFECT (SIMPAN HTML FINAL) ==========
         async function typeMessage(text, container) {
             const bubble = container.querySelector('.bubble');
             const rawText = text;
@@ -365,9 +365,15 @@
             bubble.innerHTML = fullHtml;
             scrollToBottom();
             
+            // Simpan ke localStorage (hanya 1 kali)
             const chat = chats.find(c => c.id === activeChatId);
             if (chat) {
-                chat.messages.push({ role: 'assistant', content: fullHtml });
+                const lastMsg = chat.messages[chat.messages.length - 1];
+                if (lastMsg && lastMsg.role === 'assistant') {
+                    lastMsg.content = fullHtml;
+                } else {
+                    chat.messages.push({ role: 'assistant', content: fullHtml });
+                }
                 saveChats();
                 renderChatList();
             }
@@ -415,6 +421,7 @@
                 input.value = '';
                 return;
             }
+            
             addMessageToChat(msg, true);
             input.value = '';
             
@@ -499,4 +506,4 @@
         loadChats();
     </script>
 </body>
-                                                                             </html>
+    </html>
