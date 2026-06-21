@@ -43,7 +43,6 @@
         .menu-btn:hover, .new-chat-icon:hover { background: #f3e5f5; border-color: #712375; }
         .chat-header h1 { color: #712375; font-size: 1.2rem; font-weight: 600; margin: 0; }
         .header-right { display: flex; align-items: center; gap: 8px; }
-        .api-system-btn { background: transparent; border: 1px solid #e5e5e5; color: #712375; padding: 5px 12px; border-radius: 20px; font-size: 10px; cursor: pointer; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; background: #f5f5f5; scroll-behavior: smooth; }
         
         .message { display: flex; flex-direction: column; width: 100%; animation: fadeInUp 0.3s ease-out; }
@@ -61,12 +60,6 @@
         .message.bot .bubble hr { margin: 10px 0; border: none; height: 1px; background: #e5e5e5; }
         .message.bot .bubble code { background: #f0f0f0; padding: 2px 6px; border-radius: 8px; font-family: monospace; font-size: 0.9em; }
         .message.bot .bubble pre { background: #f0f0f0; padding: 10px; border-radius: 10px; overflow-x: auto; margin: 8px 0; }
-
-        .api-input { background: #ffffff; padding: 8px 12px; border-top: 1px solid #e5e5e5; display: flex; gap: 8px; flex-shrink: 0; }
-        .api-input.hide { display: none; }
-        .api-input input { flex: 1; background: #f8f8f8; border: 1px solid #e5e5e5; color: #333333; padding: 8px 12px; border-radius: 25px; font-size: 11px; outline: none; }
-        .api-input input:focus { border-color: #712375; }
-        .api-input button { background: #712375; border: none; color: white; padding: 6px 14px; border-radius: 25px; cursor: pointer; }
 
         .input-area { background: #ffffff; padding: 10px; border-top: 1px solid #e5e5e5; display: flex; gap: 10px; flex-shrink: 0; }
         .input-area input { flex: 1; background: #f8f8f8; border: 1px solid #e5e5e5; color: #333333; padding: 10px 14px; border-radius: 30px; font-size: 13px; outline: none; transition: all 0.2s; }
@@ -104,7 +97,6 @@
                     <h1>Qigloz AI</h1>
                 </div>
                 <div class="header-right">
-                    <button class="api-system-btn" id="apiSystemBtn">API System</button>
                     <button class="new-chat-icon" id="newChatBtnMobile">+</button>
                 </div>
             </div>
@@ -116,11 +108,6 @@
                 </div>
             </div>
 
-            <div class="api-input" id="apiInputContainer">
-                <input type="text" id="apiKeyInput" placeholder="Masukkan API Key Google Gemini..." autocomplete="off">
-                <button id="saveApiBtn">Simpan</button>
-            </div>
-
             <div class="input-area">
                 <input type="text" id="userInput" placeholder="Ketik pertanyaanmu di sini...">
                 <button class="btn-send" id="sendBtn">Kirim</button>
@@ -129,9 +116,11 @@
     </div>
 
     <script>
+        // ========== INTRO ==========
         const introScreen = document.getElementById('introScreen');
         setTimeout(() => introScreen.classList.add('hide'), 8000);
 
+        // ========== SCROLL ==========
         const chatMessages = document.getElementById('chatMessages');
         function scrollToBottom() {
             setTimeout(() => {
@@ -142,10 +131,12 @@
             }, 50);
         }
 
+        // ========== DATA ==========
         let chats = [];
         let activeChatId = null;
-        let API_KEY = localStorage.getItem('qigloz_api_key') || '';
+        // API Key sudah tidak digunakan di frontend, semua lewat Worker
 
+        // ========== SIDEBAR ==========
         const sidebarEl = document.getElementById('sidebar');
         const overlayEl = document.getElementById('sidebarOverlay');
         let touchStartX = 0;
@@ -179,6 +170,7 @@
             }
         });
 
+        // ========== RESET CHAT ==========
         document.getElementById('resetBtn').addEventListener('click', function() {
             if (confirm("Yakin ingin menghapus semua chat?")) {
                 localStorage.removeItem('qigloz_chats');
@@ -187,6 +179,7 @@
             }
         });
 
+        // ========== LOAD & SAVE ==========
         function loadChats() {
             const saved = localStorage.getItem('qigloz_chats');
             if (saved) {
@@ -209,6 +202,7 @@
             localStorage.setItem('qigloz_activeChat', activeChatId);
         }
 
+        // ========== RENDER CHAT LIST ==========
         function renderChatList() {
             const container = document.getElementById('chatList');
             if (!container) return;
@@ -300,7 +294,7 @@
             }); 
         }
 
-        // ========== RENDER CHAT AKTIF (SELALU PARSE MARKDOWN) ==========
+        // ========== RENDER CHAT AKTIF ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -312,7 +306,6 @@
                 
                 let content;
                 if (msg.role === 'bot') {
-                    // ===== SELALU PARSE MARKDOWN =====
                     content = parseMarkdown(msg.content);
                 } else {
                     content = escapeHtml(msg.content).replace(/\n/g, '<br>');
@@ -324,6 +317,7 @@
             scrollToBottom();
         }
 
+        // ========== PARSE MARKDOWN ==========
         function parseMarkdown(text) {
             let html = text;
             html = html.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m]));
@@ -340,16 +334,31 @@
             return html;
         }
 
-        // ========== TANPA TYPING ANIMATION ==========
+        // ========== CALL WORKER (BUKAN GEMINI LANGSUNG) ==========
+        async function callGeminiAPI(prompt) {
+            // Ganti dengan URL Worker Cloudflare-mu!
+            const WORKER_URL = "https://qigloz-ai-backend.xxx.workers.dev";
+
+            const res = await fetch(WORKER_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: prompt })
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || "Worker Error");
+            }
+
+            const data = await res.json();
+            return data.reply;
+        }
+
+        // ========== SEND MESSAGE ==========
         async function sendMessage() {
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
             if (!msg) return;
-            if (!API_KEY) {
-                addMessageToChat("⚠️ Masukkan API Key Google Gemini dulu!", false);
-                input.value = '';
-                return;
-            }
             
             // Tampilkan pesan user
             addMessageToChat(msg, true);
@@ -357,15 +366,7 @@
             
             try {
                 const reply = await callGeminiAPI(msg);
-                // Tampilkan jawaban bot langsung dengan Markdown
-                const chat = chats.find(c => c.id === activeChatId);
-                if (chat) {
-                    chat.messages.push({ role: 'assistant', content: reply });
-                    saveChats();
-                    renderChatList();
-                    renderCurrentChat();
-                    scrollToBottom();
-                }
+                addMessageToChat(reply, false);
             } catch (err) {
                 addMessageToChat(`❌ ${err.message}`, false);
             }
@@ -384,17 +385,7 @@
             scrollToBottom();
         }
 
-        async function callGeminiAPI(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            if (!res.ok) throw new Error((await res.json()).error?.message || 'API Error');
-            return (await res.json()).candidates[0].content.parts[0].text;
-        }
-
+        // ========== NEW CHAT ==========
         function createNewChat() {
             const newChat = {
                 id: Date.now().toString(),
@@ -411,33 +402,12 @@
         document.getElementById('newChatBtn').onclick = createNewChat;
         document.getElementById('newChatBtnMobile').onclick = createNewChat;
 
+        // ========== EVENT LISTENERS ==========
         document.getElementById('sendBtn').onclick = sendMessage;
         document.getElementById('userInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
 
-        const apiContainer = document.getElementById('apiInputContainer');
-        if (API_KEY) apiContainer.classList.add('hide');
-        document.getElementById('apiSystemBtn').onclick = () => {
-            if (confirm("Reset API Key?")) {
-                localStorage.removeItem('qigloz_api_key');
-                API_KEY = '';
-                apiContainer.classList.remove('hide');
-                document.getElementById('apiKeyInput').value = '';
-                addMessageToChat("🔑 API Key direset. Masukkan API Key baru.", false);
-            }
-        };
-        document.getElementById('saveApiBtn').onclick = () => {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if (key && key.startsWith('AIza')) {
-                API_KEY = key;
-                localStorage.setItem('qigloz_api_key', key);
-                apiContainer.classList.add('hide');
-                addMessageToChat("✅ API Key berhasil disimpan!", false);
-            } else {
-                addMessageToChat("❌ API Key tidak valid!", false);
-            }
-        };
-
+        // ========== START ==========
         loadChats();
     </script>
 </body>
-                    </html>
+    </html>
