@@ -307,7 +307,7 @@
             }); 
         }
 
-        // ========== RENDER CHAT AKTIF (LANGSUNG TAMPILKAN HTML) ==========
+        // ========== RENDER CHAT AKTIF (SELALU PARSE MARKDOWN) ==========
         function renderCurrentChat() {
             const chat = chats.find(c => c.id === activeChatId);
             if (!chat) return;
@@ -319,7 +319,8 @@
                 
                 let content;
                 if (msg.role === 'bot') {
-                    content = msg.content; // Langsung tampilkan HTML
+                    // ===== SELALU PARSE MARKDOWN =====
+                    content = parseMarkdown(msg.content);
                 } else {
                     content = escapeHtml(msg.content).replace(/\n/g, '<br>');
                 }
@@ -346,33 +347,35 @@
             return html;
         }
 
-        // ========== TYPING EFFECT (SIMPAN HTML FINAL) ==========
+        // ========== TYPING EFFECT (SIMPAN TEKS MENTAH) ==========
         async function typeMessage(text, container) {
             const bubble = container.querySelector('.bubble');
             const rawText = text;
             
-            const fullHtml = parseMarkdown(rawText);
-            
+            // Tampilkan karakter per karakter (tanpa parse Markdown dulu)
             let tempText = '';
             for (let i = 0; i < rawText.length; i++) {
                 tempText += rawText[i];
+                // Tampilkan partial Markdown
                 const partialHtml = parseMarkdown(tempText);
                 bubble.innerHTML = partialHtml;
                 scrollToBottom();
                 await new Promise(r => setTimeout(r, 7));
             }
             
+            // Tampilkan final HTML
+            const fullHtml = parseMarkdown(rawText);
             bubble.innerHTML = fullHtml;
             scrollToBottom();
             
-            // Simpan ke localStorage (hanya 1 kali)
+            // ===== SIMPAN TEKS MENTAH (BUKAN HTML) =====
             const chat = chats.find(c => c.id === activeChatId);
             if (chat) {
                 const lastMsg = chat.messages[chat.messages.length - 1];
                 if (lastMsg && lastMsg.role === 'assistant') {
-                    lastMsg.content = fullHtml;
+                    lastMsg.content = rawText; // Simpan teks mentah
                 } else {
-                    chat.messages.push({ role: 'assistant', content: fullHtml });
+                    chat.messages.push({ role: 'assistant', content: rawText });
                 }
                 saveChats();
                 renderChatList();
